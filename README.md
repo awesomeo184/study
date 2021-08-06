@@ -10,7 +10,7 @@
 
 # Books
 
-## 📕 [Effective Java 3/E]()
+## 📕 [Effective Java 3/E](effective-java-3rd/)
 
 # CheatSheet
 
