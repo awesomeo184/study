@@ -5,10 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.study.springcore.AppConfig;
 import com.study.springcore.domain.Grade;
 import com.study.springcore.domain.Member;
-import com.study.springcore.service.MemberService;
-import com.study.springcore.service.MemberServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 class MemberServiceTest {
 
@@ -16,8 +16,8 @@ class MemberServiceTest {
 
     @BeforeEach
     void beforeEach() {
-        AppConfig appConfig = new AppConfig();
-        memberService = appConfig.memberService();
+        ApplicationContext ac = new AnnotationConfigApplicationContext(AppConfig.class);
+        memberService = ac.getBean("memberService", MemberService.class);
     }
 
     @Test
