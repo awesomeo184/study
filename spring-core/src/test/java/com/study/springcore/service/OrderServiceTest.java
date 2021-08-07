@@ -3,6 +3,7 @@ package com.study.springcore.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.study.springcore.AppConfig;
 import com.study.springcore.domain.Grade;
 import com.study.springcore.domain.Member;
 import com.study.springcore.domain.Order;
@@ -10,8 +11,9 @@ import org.junit.jupiter.api.Test;
 
 class OrderServiceTest {
 
-    MemberService memberService = new MemberServiceImpl();
-    OrderService orderService = new OrderServiceImpl();
+    AppConfig appConfig = new AppConfig();
+    MemberService memberService = appConfig.memberService();
+    OrderService orderService = appConfig.orderService();
 
     @Test
     void testCreateOrder() {

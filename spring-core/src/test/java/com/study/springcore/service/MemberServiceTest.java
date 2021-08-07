@@ -2,6 +2,7 @@ package com.study.springcore.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.study.springcore.AppConfig;
 import com.study.springcore.domain.Grade;
 import com.study.springcore.domain.Member;
 import com.study.springcore.service.MemberService;
@@ -10,7 +11,8 @@ import org.junit.jupiter.api.Test;
 
 class MemberServiceTest {
 
-    MemberService memberService = new MemberServiceImpl();
+    AppConfig appConfig = new AppConfig();
+    MemberService memberService = appConfig.memberService();
 
     @Test
     void testJoin() {
