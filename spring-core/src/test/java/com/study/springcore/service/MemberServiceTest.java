@@ -7,12 +7,18 @@ import com.study.springcore.domain.Grade;
 import com.study.springcore.domain.Member;
 import com.study.springcore.service.MemberService;
 import com.study.springcore.service.MemberServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class MemberServiceTest {
 
-    AppConfig appConfig = new AppConfig();
-    MemberService memberService = appConfig.memberService();
+    MemberService memberService;
+
+    @BeforeEach
+    void beforeEach() {
+        AppConfig appConfig = new AppConfig();
+        memberService = appConfig.memberService();
+    }
 
     @Test
     void testJoin() {
