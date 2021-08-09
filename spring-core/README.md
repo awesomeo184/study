@@ -175,5 +175,123 @@ ac.getBeanDefinition(beanName)으로 해당 빈의 `BeanDefinition`을 가져올
 > 실무에서 BeanDefinition을 직접 정의해서 쓰는 일은 거의 없다고 한다.
 
 
+## 싱글톤 레지스트리
 
+스프링은 기업용 온라인 서비스를 지원하기 위해서 탄생했다. 웹 서비스는 보통 여러 고객이 동시에 요청을 보낸다. 각 고객의 요청마다 새로 객체를 생성하면 응답성이 떨어질 것이다. 그래서 스프링은 기본적으로 빈을 싱글톤으로 관리한다.
+
+일반적으로 개발자가 직접 싱글톤 패턴을 구현하려면 유연성이 떨어지고 테스트하기 어려운 등 여러 문제가 있다. 하지만 스프링 컨테이너에 등록된 빈을 사용하면 직접 싱글톤으로 구현하지 않아도 스프링이 알아서 싱글톤으로 관리해준다. 따라서 아래 테스트는 통과한다.
+
+```java
+public class SingletonTest {
+
+    @Test
+    void singletonTest() throws Exception {
+        ApplicationContext ac = new AnnotationConfigApplicationContext(AppConfig.class);
+
+        MemberService memberService1 = ac.getBean("memberService", MemberService.class);
+        MemberService memberService2 = ac.getBean("memberService", MemberService.class);
+
+        assertThat(memberService1).isSameAs(memberService2);
+    }
+}
+```
+
+
+> 주의❗ 빈의 필드에 공유 변수를 두면 안된다.
+> 빈은 싱글톤으로 관리되기 때문에 상태를 유지하는 필드를 두면 race condition으로 인한 버그가 발생할 수 있다. 그렇기 때문에 빈은 반드시 무상태로 설계해야한다.
+
+### @Configuration과 CGLIB
+
+`AppConfig`의 코드는 다음과 같다.
+
+```java
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public MemberService memberService() {
+        return new MemberServiceImpl(memberRepository());
+    }
+
+    @Bean
+    public OrderService orderService() {
+        return new OrderServiceImpl(discountPolicy(), memberRepository());
+    }
+
+    @Bean
+    public MemberRepository memberRepository() {
+        return new MemoryMemberRepository();
+    }
+
+    @Bean
+    public DiscountPolicy discountPolicy() {
+        return new FixDiscountPolicy();
+    }
+}
+```
+️
+memberService()와 orderService()를 보면 `MemberRepository`의 생성자가 두 번 호출되고 있는 것을 볼 수 있다. 제아무리 스프링이라도 쌩 자바 코드로 생성자를 직접 두 번 호출했는데 어떻게 싱글톤으로 관리를 할 수 있는걸까?
+
+memberRepository() 메서드가 호출될 때 메시지를 출력하도록 만들고 빈을 호출해보자.
+
+```java
+@Configuration
+public class AppConfig { 
+    @Bean
+    public MemberRepository memberRepository() {
+        System.out.println("call memberRepository");
+        return new MemoryMemberRepository();
+    }
+}
+```
+
+```java
+    @Test
+    void callMemberRepository() {
+        ApplicationContext ac = new AnnotationConfigApplicationContext(AppConfig.class);
+
+        MemberService memberService = ac.getBean("memberService", MemberService.class);
+        OrderService orderService = ac.getBean("orderService", OrderService.class);
+    }
+```
+
+테스트를 실행해보면 콘솔에 "call memberRepository"가 한 번만 출력되는 것을 확인할 수 있다. 
+
+어떻게 이런 일이 가능한 것일까? 비밀은 `@Configuration` 애너테이션에 있다.
+
+`AppConfig`도 빈이므로 컨테이너에서 꺼내올 수 있다. AppConfig의 클래스 정보를 출력해보면 기대했던 값과 다른 결과가 나온다.
+
+```java
+    @Test
+    void testCGLIB() {
+        ApplicationContext ac = new AnnotationConfigApplicationContext(AppConfig.class);
+
+        AppConfig bean = ac.getBean(AppConfig.class);
+        System.out.println("AppConfig = " + bean.getClass());
+    }
+```
+
+출력결과
+```
+AppConfig = class com.study.springcore.AppConfig$$EnhancerBySpringCGLIB$$c299be5b
+```
+
+스프링은 CGLIB이라는 바이트코드 조작 라이브러리를 이용해서 `AppConfig`라는 클래스를 상속받은 임의의 클래스를 만들고 이를 빈으로 등록한다.
+이 임의의 클래스는 바이트 코드 조작을 통해, 예컨대 아래처럼 싱글톤 유지를 위한 코드를 추가한다.
+
+[CGLIB 그림]
+
+```java
+    @Bean
+    public MemberRepository memberRepository() {
+    if (memoryMemberRepository가 이미 스프링 컨테이너에 등록되어 있다면) {
+        return 스프링 컨테이너에서 찾아서 반환;
+    } else {
+        MemoryMemberRepository를 생성하고 스프링 컨테이너에 등록 
+        return 반환
+    } 
+}
+```
+
+만약 `AppConfig` 클래스에서 `@Configuration` 애너테이션을 제거하면 AppConfig가 그대로 컨테이너에 등록되고 싱글톤도 보장되지 않는다.
 
