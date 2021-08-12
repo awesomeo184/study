@@ -15,3 +15,4 @@
 * [아이템 5. 자원을 직접 명시하지 말고 의존성 주입을 사용하라](src/main/java/Chapter2/item5/item5.md)
 * [아이템 6. 불필요한 객체 생성을 피하라](src/main/java/Chapter2/item6/item6.md)
 * [아이템 7. 다 쓴 객체 참조를 해제하라](src/main/java/Chapter2/item7/item7.md)
+* [아이템 8. Finalizer와 Cleaner는 사용하지 마라](src/main/java/Chapter2/item8/item8.md)
