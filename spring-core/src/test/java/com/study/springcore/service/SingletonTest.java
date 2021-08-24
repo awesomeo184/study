@@ -34,4 +34,15 @@ public class SingletonTest {
         AppConfig bean = ac.getBean(AppConfig.class);
         System.out.println("AppConfig = " + bean.getClass());
     }
+
+    @Test
+    void testBeanList() {
+        ApplicationContext ac = new AnnotationConfigApplicationContext(
+            AppConfig.class);
+
+        String[] beanDefinitionNames = ac.getBeanDefinitionNames();
+        for (String beanDefinitionName : beanDefinitionNames) {
+            System.out.println("beanDefinitionName = " + beanDefinitionName);
+        }
+    }
 }

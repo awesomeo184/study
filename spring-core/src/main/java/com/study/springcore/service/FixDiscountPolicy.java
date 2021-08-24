@@ -2,7 +2,9 @@ package com.study.springcore.service;
 
 import com.study.springcore.domain.Grade;
 import com.study.springcore.domain.Member;
+import org.springframework.stereotype.Component;
 
+@Component
 public class FixDiscountPolicy implements DiscountPolicy{
 
     private static final int DISCOUNT_AMOUNT = 1000;

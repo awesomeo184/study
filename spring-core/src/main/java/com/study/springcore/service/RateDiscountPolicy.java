@@ -2,6 +2,7 @@ package com.study.springcore.service;
 
 import com.study.springcore.domain.Grade;
 import com.study.springcore.domain.Member;
+import org.springframework.stereotype.Component;
 
 public class RateDiscountPolicy implements DiscountPolicy{
 
